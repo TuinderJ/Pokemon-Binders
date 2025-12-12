@@ -1,6 +1,15 @@
 # Table of contents
 - [Client Features](#features-on-the-client)
-# Features on the client:
+    - [Owner View](#owner-view)
+        - [Binder](#binder)
+        - [Collecting](#collecting)
+        - [Trading](#trading)
+        - [Card Search](#card-search)
+    - [Viewer View](#viewer-view)
+        - [Binder](#binder-1)
+        - [Trading](#trading-1)
+
+# Features on the client
 ## Owner View
 ### Binder
 - [ ] Register a new binder
