@@ -1,3 +1,5 @@
+# Table of contents
+- [Client Features](#features-on-the-client)
 # Features on the client:
 ## Owner View
 ### Binder
