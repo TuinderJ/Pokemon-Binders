@@ -37,8 +37,15 @@ struct Pokemon {
 struct PokemonRestriction {
     /// Generic Pokemon selection
     pokemon: Pokemon,
+    /// Whitelist or blacklist to designate if the owner wants to include or exclude specific cards.
+    list_type: ListType,
     /// Cards that the binder owner does not want to count toward a desired Pokemon
-    restricted_cards: Vec<Card>,
+    list: Vec<Card>,
+}
+
+enum ListType {
+    WhiteList,
+    BlackList,
 }
 
 struct AcquiredCard {
