@@ -112,6 +112,7 @@ struct Set {
     images: SetImages,
 }
 
+/// Urls to the images related to a set.
 struct SetImages {
     /// The url to the symbol image.
     symbol: String,
@@ -119,6 +120,7 @@ struct SetImages {
     logo: String,
 }
 
+/// Urls to the images related to a card.
 struct CardImages {
     /// The url to the small card image.
     small: String,
@@ -126,6 +128,7 @@ struct CardImages {
     large: String,
 }
 
+/// TCGPlayer.com information about the value of a card.
 struct TCGPlayer {
     /// The url to purchase this card.
     url: String,
@@ -135,10 +138,16 @@ struct TCGPlayer {
     prices: CardPrices,
 }
 
+/// Prices of the card from TCGPlayer.com
 struct CardPrices {
+    /// The low price of the card.
     low: f32,
+    /// The mid price of the card.
     mid: f32,
+    /// The high price of the card.
     high: f32,
+    /// The market value of the card. This is usually the best representation of what people are willing to pay.
     market: f32,
+    /// The direct low price of the card.
     direct_low: f32,
 }
