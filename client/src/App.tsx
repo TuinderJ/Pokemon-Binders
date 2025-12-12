@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { DbConnection, Message, User } from './module_bindings';
 import { useSpacetimeDB, useTable, where, eq } from 'spacetimedb/react';
-import { Identity, Timestamp } from 'spacetimedb';
+import { Identity, ConnectionId } from 'spacetimedb';
 import './App.css';
+import { PokemonTCG } from 'pokemon-tcg-sdk-typescript';
 
 export type PrettyMessage = {
   senderName: string;
@@ -17,6 +18,24 @@ function App() {
   const [systemMessages, setSystemMessages] = useState([] as Message[]);
   const [newMessage, setNewMessage] = useState('');
 
+  const [imageSource, setImageSource] = useState(undefined);
+
+  useEffect(() => {
+    console.log('finding pokemon');
+    PokemonTCG.findCardByID('xy1-1')
+    .then(card => {
+      console.log(card);
+      // setImageSource(data.data.images.small);
+    })
+    .catch(error => {
+      console.log('this errored');
+      console.log(error);
+      // do something with the error
+    });
+    return () => {
+    }
+  }, [])
+  
   const prettyMessages: PrettyMessage[] = [];
   const onlineUsers: User[] = [];
   const offlineUsers: User[] = [];
@@ -40,6 +59,7 @@ function App() {
     <div className="App">
       <div className="profile">
         <h1>Profile</h1>
+        <img src={imageSource}/>
         {!settingName ? (
           <>
             <p>{name}</p>
