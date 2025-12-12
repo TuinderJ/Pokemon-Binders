@@ -1,5 +1,4 @@
 /// This denotes a binder. The owner of the binder can add a list of desired cards, desired Pokemon, cards they've acquired, or Pokemon they've acquired.
-#[derive()]
 struct Binder {
     /// Unique identifier of the binder.
     id: String,
@@ -18,6 +17,25 @@ struct Binder {
     desired_cards: Vec<Card>,
     /// A list of cards that the owner has collected in this binder.
     acquired_cards: Vec<AcquiredCard>,
+    /// A list of offers from viewers of the binder.
+    offers: Vec<Offer>,
+}
+
+/// An offer from a viewer of a binder. This can be a `Cash` or `Trade` type offer.
+struct Offer {
+    /// The identity of the person making the offer.
+    owner: Owner,
+    /// Either `Cash` or `Trade`.
+    offer_type: OfferType,
+    /// A list of cards that are being offered.
+    offers: Vec<Card>,
+    /// A list of cards that are being requested.
+    requests: Vec<Card>,
+}
+
+enum OfferType {
+    Cash,
+    Trade,
 }
 
 /// The user information for the owner of one or more binders.
