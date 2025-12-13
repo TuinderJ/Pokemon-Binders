@@ -4,6 +4,9 @@ use crate::domain::{Card, User};
 /// An offer from a viewer of a binder. This can be a `Cash` or `Trade` type offer.
 #[table(name = offer)]
 pub struct Offer {
+    /// Unique ID of the offer
+    #[primary_key]
+    pub id: String,
     /// The identity of the person making the offer.
     owner: User,
     /// Either `Cash` or `Trade`.
@@ -14,7 +17,7 @@ pub struct Offer {
     requests: Vec<Card>,
 }
 
-#[derive(SpacetimeType, Debug, Copy, Clone)]
+#[derive(SpacetimeType)]
 enum OfferType {
     Cash,
     Trade,

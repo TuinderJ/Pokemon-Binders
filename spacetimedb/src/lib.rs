@@ -9,7 +9,7 @@ pub struct Person {
 
 #[spacetimedb::reducer(init)]
 pub fn init(_ctx: &ReducerContext) {
-    // Called when the module is initially published
+    log::info!("working");
 }
 
 #[spacetimedb::reducer(client_connected)]
