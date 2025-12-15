@@ -4,17 +4,18 @@ use spacetimedb::{table, SpacetimeType};
 /// More than one of the same card can be collected in the binder.
 #[table(name = acquired_card)]
 pub struct AcquiredCard {
-    /// A specific Pokemon Card.
+    /// A specific Pokémon Card.
     card: Card,
     /// Quantity of this card in the binder.
     qty_acquired: i32,
 }
 
-/// Information about a specific Pokemon Card.
+/// Information about a specific Pokémon Card.
 #[table(name = card)]
 pub struct Card {
     /// Unique identifier for the card.
-    id: String,
+    #[primary_key]
+    pub id: String,
     /// The supertype of the card, such as Pokémon, Energy, or Trainer.
     supertype: String,
     /// A list of subtypes, such as Basic, EX, Mega, Rapid Strike, etc.
@@ -39,7 +40,8 @@ pub struct Card {
 #[table(name = set)]
 pub struct Set {
     /// A unique identifier for the set.
-    id: String,
+    #[primary_key]
+    pub id: String,
     /// The name of the set.
     name: String,
     /// The number printed on the card that represents the total. This total does not include secret rares.
@@ -62,7 +64,7 @@ struct SetImages {
 }
 
 /// Urls to the images related to a card.
-#[derive(SpacetimeType, Debug, Clone)]
+#[derive(SpacetimeType)]
 struct CardImages {
     /// The url to the small card image.
     small: String,

@@ -58,6 +58,7 @@ impl say_hello for super::RemoteReducers {
         SayHelloCallbackId(self.imp.on_reducer(
             "say_hello",
             Box::new(move |ctx: &super::ReducerEventContext| {
+                #[allow(irrefutable_let_patterns)]
                 let super::ReducerEventContext {
                     event:
                         __sdk::ReducerEvent {
