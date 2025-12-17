@@ -14,7 +14,7 @@ use super::pokemon_restriction_type::PokemonRestriction;
 #[sats(crate = __lib)]
 pub struct Binder {
     pub id: String,
-    pub owner: __sdk::Identity,
+    pub owner: u32,
     pub name: String,
     pub desired_pokemon_ids: Vec<String>,
     pub acquired_pokemons: Vec<AcquiredPokemon>,

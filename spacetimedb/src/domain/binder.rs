@@ -1,5 +1,6 @@
-use spacetimedb::{table, Identity, SpacetimeType};
 use crate::domain::{AcquiredCard, Card, Offer};
+use anyhow::Result;
+use spacetimedb::{table, ReducerContext, SpacetimeType, Table, TryInsertError};
 
 /// This denotes a binder. The owner of the binder can add a list of desired cards, desired Pokémon, cards they've acquired, or Pokémon they've acquired.
 #[table(name = binder)]
@@ -8,7 +9,7 @@ pub struct Binder {
     #[primary_key]
     pub id: String,
     /// The owner of the binder.
-    owner: Identity,
+    owner: u32,
     /// The display name of the binder.
     name: String,
     /// A list of Pokémon that the owner wants to collect in this binder.
@@ -24,6 +25,48 @@ pub struct Binder {
     acquired_cards: Vec<AcquiredCard>,
     /// A list of offers from viewers of the binder.
     offers: Vec<Offer>,
+}
+
+impl Binder {
+    pub fn new(id: String, name: String, owner: u32) -> Self {
+        Self {
+            id,
+            owner,
+            name,
+            desired_pokemon_ids: Vec::new(),
+            acquired_pokemons: Vec::new(),
+            pokemon_restrictions: Vec::new(),
+            desired_cards: Vec::new(),
+            acquired_cards: Vec::new(),
+            offers: Vec::new(),
+        }
+    }
+}
+
+#[spacetimedb::reducer]
+pub fn new_binder(ctx: &ReducerContext, id: String, name: String, owner: u32) -> Result<()> {
+    let binder = Binder::new(id, name, owner);
+    if let Err(error) = ctx.db.binder().try_insert(binder) {
+        match error {
+            TryInsertError::UniqueConstraintViolation(_) => {
+                Err(anyhow::anyhow!("Binder already exists"))
+            }
+            TryInsertError::AutoIncOverflow(_) => Err(anyhow::anyhow!(
+                "Something went wrong. Contact site administrator"
+            )),
+        }
+    } else {
+        Ok(())
+    }
+}
+
+#[spacetimedb::reducer]
+pub fn delete_binder(ctx: &ReducerContext, id: String) -> Result<()> {
+    if ctx.db.binder().id().delete(id) {
+        Ok(())
+    } else {
+        Err(anyhow::anyhow!("Binder does not exist"))
+    }
 }
 
 /// A helper struct to be able to select a card or cards that have been acquired when the owner is searching for Pokémon.
@@ -45,6 +88,17 @@ pub struct Pokemon {
     name: String,
 }
 
+impl Pokemon {
+    pub fn new(id: i16, name: String) -> Self {
+        Self { id, name }
+    }
+}
+
+#[spacetimedb::reducer]
+pub fn add_pokemon(ctx: &ReducerContext, id: i16, name: String) {
+    ctx.db.pokemon().try_insert(Pokemon::new(id, name)).unwrap();
+}
+
 /// A white-list or black-list for denoting which cards the owner deems acceptable for a specific Pokémon.
 #[derive(SpacetimeType)]
 struct PokemonRestriction {
@@ -61,4 +115,3 @@ enum ListType {
     WhiteList,
     BlackList,
 }
-

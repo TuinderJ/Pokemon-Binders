@@ -9,5 +9,9 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-spacetimedb = "1.7.*"
+spacetimedb = "1.11.0"
 log = "0.4"
+anyhow = "1.0.100"
+thiserror = "2.0.17"
+eyre = "0.6.12"
+color-eyre = "0.6.5"

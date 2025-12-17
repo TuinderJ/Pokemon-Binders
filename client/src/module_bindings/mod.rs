@@ -9,16 +9,21 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 pub mod acquired_card_table;
 pub mod acquired_card_type;
 pub mod acquired_pokemon_type;
+pub mod add_pokemon_reducer;
 pub mod add_reducer;
+pub mod add_user_reducer;
 pub mod binder_table;
 pub mod binder_type;
 pub mod card_images_type;
 pub mod card_prices_type;
 pub mod card_table;
 pub mod card_type;
+pub mod delete_binder_reducer;
+pub mod delete_user_reducer;
 pub mod identity_connected_reducer;
 pub mod identity_disconnected_reducer;
 pub mod list_type_type;
+pub mod new_binder_reducer;
 pub mod offer_table;
 pub mod offer_type;
 pub mod offer_type_type;
@@ -38,13 +43,19 @@ pub mod user_type;
 pub use acquired_card_table::*;
 pub use acquired_card_type::AcquiredCard;
 pub use acquired_pokemon_type::AcquiredPokemon;
+pub use add_pokemon_reducer::{add_pokemon, set_flags_for_add_pokemon, AddPokemonCallbackId};
 pub use add_reducer::{add, set_flags_for_add, AddCallbackId};
+pub use add_user_reducer::{add_user, set_flags_for_add_user, AddUserCallbackId};
 pub use binder_table::*;
 pub use binder_type::Binder;
 pub use card_images_type::CardImages;
 pub use card_prices_type::CardPrices;
 pub use card_table::*;
 pub use card_type::Card;
+pub use delete_binder_reducer::{
+    delete_binder, set_flags_for_delete_binder, DeleteBinderCallbackId,
+};
+pub use delete_user_reducer::{delete_user, set_flags_for_delete_user, DeleteUserCallbackId};
 pub use identity_connected_reducer::{
     identity_connected, set_flags_for_identity_connected, IdentityConnectedCallbackId,
 };
@@ -52,6 +63,7 @@ pub use identity_disconnected_reducer::{
     identity_disconnected, set_flags_for_identity_disconnected, IdentityDisconnectedCallbackId,
 };
 pub use list_type_type::ListType;
+pub use new_binder_reducer::{new_binder, set_flags_for_new_binder, NewBinderCallbackId};
 pub use offer_table::*;
 pub use offer_type::Offer;
 pub use offer_type_type::OfferType;
@@ -76,9 +88,30 @@ pub use user_type::User;
 /// to indicate which reducer caused the event.
 
 pub enum Reducer {
-    Add { name: String },
+    Add {
+        name: String,
+    },
+    AddPokemon {
+        id: i16,
+        name: String,
+    },
+    AddUser {
+        name: String,
+        email: String,
+    },
+    DeleteBinder {
+        id: String,
+    },
+    DeleteUser {
+        id: u32,
+    },
     IdentityConnected,
     IdentityDisconnected,
+    NewBinder {
+        id: String,
+        name: String,
+        owner: u32,
+    },
     SayHello,
 }
 
@@ -90,8 +123,13 @@ impl __sdk::Reducer for Reducer {
     fn reducer_name(&self) -> &'static str {
         match self {
             Reducer::Add { .. } => "add",
+            Reducer::AddPokemon { .. } => "add_pokemon",
+            Reducer::AddUser { .. } => "add_user",
+            Reducer::DeleteBinder { .. } => "delete_binder",
+            Reducer::DeleteUser { .. } => "delete_user",
             Reducer::IdentityConnected => "identity_connected",
             Reducer::IdentityDisconnected => "identity_disconnected",
+            Reducer::NewBinder { .. } => "new_binder",
             Reducer::SayHello => "say_hello",
             _ => unreachable!(),
         }
@@ -104,6 +142,29 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
             "add" => {
                 Ok(__sdk::parse_reducer_args::<add_reducer::AddArgs>("add", &value.args)?.into())
             }
+            "add_pokemon" => Ok(
+                __sdk::parse_reducer_args::<add_pokemon_reducer::AddPokemonArgs>(
+                    "add_pokemon",
+                    &value.args,
+                )?
+                .into(),
+            ),
+            "add_user" => Ok(__sdk::parse_reducer_args::<add_user_reducer::AddUserArgs>(
+                "add_user",
+                &value.args,
+            )?
+            .into()),
+            "delete_binder" => Ok(__sdk::parse_reducer_args::<
+                delete_binder_reducer::DeleteBinderArgs,
+            >("delete_binder", &value.args)?
+            .into()),
+            "delete_user" => Ok(
+                __sdk::parse_reducer_args::<delete_user_reducer::DeleteUserArgs>(
+                    "delete_user",
+                    &value.args,
+                )?
+                .into(),
+            ),
             "identity_connected" => Ok(__sdk::parse_reducer_args::<
                 identity_connected_reducer::IdentityConnectedArgs,
             >("identity_connected", &value.args)?
@@ -112,6 +173,13 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
                 identity_disconnected_reducer::IdentityDisconnectedArgs,
             >("identity_disconnected", &value.args)?
             .into()),
+            "new_binder" => Ok(
+                __sdk::parse_reducer_args::<new_binder_reducer::NewBinderArgs>(
+                    "new_binder",
+                    &value.args,
+                )?
+                .into(),
+            ),
             "say_hello" => Ok(
                 __sdk::parse_reducer_args::<say_hello_reducer::SayHelloArgs>(
                     "say_hello",

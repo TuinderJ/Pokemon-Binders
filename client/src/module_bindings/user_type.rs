@@ -7,8 +7,9 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub struct User {
-    pub id: __sdk::Identity,
+    pub id: u32,
     pub name: String,
+    pub email: String,
 }
 
 impl __sdk::InModule for User {
