@@ -86,17 +86,22 @@ pub struct Pokemon {
     pub id: i16,
     /// Name of the Pokémon
     name: String,
+    /// URL of the image
+    sprite: String,
 }
 
 impl Pokemon {
-    pub fn new(id: i16, name: String) -> Self {
-        Self { id, name }
+    pub fn new(id: i16, name: String, sprite: String) -> Self {
+        Self { id, name, sprite }
     }
 }
 
 #[spacetimedb::reducer]
-pub fn add_pokemon(ctx: &ReducerContext, id: i16, name: String) {
-    ctx.db.pokemon().try_insert(Pokemon::new(id, name)).unwrap();
+pub fn add_pokemon(ctx: &ReducerContext, id: i16, name: String, sprite: String) {
+    ctx.db
+        .pokemon()
+        .try_insert(Pokemon::new(id, name, sprite))
+        .unwrap();
 }
 
 /// A white-list or black-list for denoting which cards the owner deems acceptable for a specific Pokémon.
