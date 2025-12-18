@@ -1,5 +1,8 @@
-use crate::domain::{AcquiredCard, Card, Offer};
-use anyhow::Result;
+use crate::domain::{
+    user::{user, User},
+    AcquiredCard, Card, Offer,
+};
+use anyhow::{anyhow, Result};
 use spacetimedb::{table, ReducerContext, SpacetimeType, Table, TryInsertError};
 
 /// This denotes a binder. The owner of the binder can add a list of desired cards, desired Pokémon, cards they've acquired, or Pokémon they've acquired.
@@ -9,11 +12,11 @@ pub struct Binder {
     #[primary_key]
     pub id: String,
     /// The owner of the binder.
-    owner: u32,
+    owner: User,
     /// The display name of the binder.
     name: String,
     /// A list of Pokémon that the owner wants to collect in this binder.
-    desired_pokemon_ids: Vec<String>,
+    desired_pokemons: Vec<Pokemon>,
     /// A list of Pokémon that the owner has collected in this binder.
     acquired_pokemons: Vec<AcquiredPokemon>,
     /// A list of white-lists and/or black-lists for denoting what the owner is looking for.
@@ -28,12 +31,12 @@ pub struct Binder {
 }
 
 impl Binder {
-    pub fn new(id: String, name: String, owner: u32) -> Self {
+    pub fn new(id: String, name: String, owner: User) -> Self {
         Self {
             id,
             owner,
             name,
-            desired_pokemon_ids: Vec::new(),
+            desired_pokemons: Vec::new(),
             acquired_pokemons: Vec::new(),
             pokemon_restrictions: Vec::new(),
             desired_cards: Vec::new(),
@@ -44,7 +47,8 @@ impl Binder {
 }
 
 #[spacetimedb::reducer]
-pub fn new_binder(ctx: &ReducerContext, id: String, name: String, owner: u32) -> Result<()> {
+pub fn new_binder(ctx: &ReducerContext, id: String, name: String, owner_id: u32) -> Result<()> {
+    let owner = ctx.db.user().id().find(owner_id).unwrap();
     let binder = Binder::new(id, name, owner);
     if let Err(error) = ctx.db.binder().try_insert(binder) {
         match error {
@@ -67,6 +71,31 @@ pub fn delete_binder(ctx: &ReducerContext, id: String) -> Result<()> {
     } else {
         Err(anyhow::anyhow!("Binder does not exist"))
     }
+}
+
+#[spacetimedb::reducer]
+pub fn change_binder_owner(
+    ctx: &ReducerContext,
+    binder_id: String,
+    new_owner_id: u32,
+) -> Result<()> {
+    let table = ctx.db.binder();
+    match table.id().find(binder_id) {
+        Some(mut binder) => {
+            match ctx.db.user().id().find(new_owner_id) {
+                Some(owner) => {
+                    binder.owner = owner;
+                    table.id().update(binder);
+                }
+                None => {
+                    return Err(anyhow!("User was not found"));
+                }
+            };
+        }
+        None => return Err(anyhow!("Binder was not found")),
+    };
+
+    Ok(())
 }
 
 /// A helper struct to be able to select a card or cards that have been acquired when the owner is searching for Pokémon.
