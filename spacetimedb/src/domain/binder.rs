@@ -83,7 +83,7 @@ struct AcquiredPokemon {
 pub struct Pokemon {
     /// National Pokedex Number of the Pokémon.
     #[primary_key]
-    pub id: i16,
+    pub id: u16,
     /// Name of the Pokémon
     name: String,
     /// URL of the image
@@ -91,13 +91,13 @@ pub struct Pokemon {
 }
 
 impl Pokemon {
-    pub fn new(id: i16, name: String, sprite: String) -> Self {
+    pub fn new(id: u16, name: String, sprite: String) -> Self {
         Self { id, name, sprite }
     }
 }
 
 #[spacetimedb::reducer]
-pub fn add_pokemon(ctx: &ReducerContext, id: i16, name: String, sprite: String) {
+pub fn add_pokemon(ctx: &ReducerContext, id: u16, name: String, sprite: String) {
     ctx.db
         .pokemon()
         .try_insert(Pokemon::new(id, name, sprite))

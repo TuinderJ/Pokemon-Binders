@@ -1,4 +1,5 @@
-use spacetimedb::{table, SpacetimeType};
+use anyhow::{anyhow, Result};
+use spacetimedb::{table, ReducerContext, SpacetimeType, Table, TryInsertError};
 
 /// This is to denote when a binder owner has acquired a specific card.
 /// More than one of the same card can be collected in the binder.
@@ -29,11 +30,77 @@ pub struct Card {
     /// The rarity of the card, such as "Common" or "Rare Rainbow".
     rarity: String,
     /// The national pokedex numbers associated with any Pokémon featured on a given card.
-    national_pokedex_numbers: Vec<i16>,
+    national_pokedex_numbers: Vec<u16>,
     /// The images for a card.
     images: CardImages,
     /// The TCGPlayer information for a given card. ALL PRICES ARE IN US DOLLARS.
     tcg_player: TCGPlayer,
+}
+
+impl Card {
+    pub fn new(
+        id: String,
+        supertype: String,
+        subtypes: Vec<String>,
+        set: Set,
+        number: String,
+        artist: String,
+        rarity: String,
+        national_pokedex_numbers: Vec<u16>,
+        images: CardImages,
+        tcg_player: TCGPlayer,
+    ) -> Self {
+        Self {
+            id,
+            supertype,
+            subtypes,
+            set,
+            number,
+            artist,
+            rarity,
+            national_pokedex_numbers,
+            images,
+            tcg_player,
+        }
+    }
+}
+
+#[spacetimedb::reducer]
+pub fn add_card(
+    ctx: &ReducerContext,
+    id: String,
+    supertype: String,
+    subtypes: Vec<String>,
+    set: Set,
+    number: String,
+    artist: String,
+    rarity: String,
+    national_pokedex_numbers: Vec<u16>,
+    images: CardImages,
+    tcg_player: TCGPlayer,
+) -> Result<()> {
+    let card = Card::new(
+        id,
+        supertype,
+        subtypes,
+        set,
+        number,
+        artist,
+        rarity,
+        national_pokedex_numbers,
+        images,
+        tcg_player,
+    );
+    if let Err(error) = ctx.db.card().try_insert(card) {
+        match error {
+            TryInsertError::UniqueConstraintViolation(_) => Err(anyhow!("Card already added.")),
+            TryInsertError::AutoIncOverflow(_) => Err(anyhow!(
+                "An error has occurred. Please contact a site admin."
+            )),
+        }
+    } else {
+        Ok(())
+    }
 }
 
 /// A set of cards.
@@ -65,7 +132,7 @@ struct SetImages {
 
 /// Urls to the images related to a card.
 #[derive(SpacetimeType)]
-struct CardImages {
+pub struct CardImages {
     /// The url to the small card image.
     small: String,
     /// The url to the large card image.
@@ -74,7 +141,7 @@ struct CardImages {
 
 /// TCGPlayer.com information about the value of a card.
 #[derive(SpacetimeType)]
-struct TCGPlayer {
+pub struct TCGPlayer {
     /// The url to purchase this card.
     url: String,
     /// A date that the price was last updated YYYY/MM/DD.
@@ -86,11 +153,11 @@ struct TCGPlayer {
 /// Prices of the card from TCGPlayer.com
 #[derive(SpacetimeType)]
 struct CardPrices {
-    /// The low price of the card.
+    /// The low-price of the card.
     low: f32,
-    /// The mid price of the card.
+    /// The mid-price of the card.
     mid: f32,
-    /// The high price of the card.
+    /// The high-price of the card.
     high: f32,
     /// The market value of the card. This is usually the best representation of what people are willing to pay.
     market: f32,
